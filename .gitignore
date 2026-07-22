@@ -1,0 +1,21 @@
+# IntelliJ
+.idea/
+*.iml
+
+# Java
+target/
+
+# Node
+node_modules/
+dist/
+
+# Python
+venv/
+__pycache__/
+*.pyc
+
+# Environment
+.env
+
+# macOS
+.DS_Store
