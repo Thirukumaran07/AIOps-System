@@ -22,6 +22,10 @@ public record MetricResponse(
 
         Double packetLoss,
 
-        LocalDateTime timestamp
+        LocalDateTime timestamp,
+
+        String anomalyStatus,
+
+        Double anomalyScore
 ) {
 }

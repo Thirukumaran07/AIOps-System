@@ -1,4 +1,8 @@
 package com.aiops.backend.enums;
 
-public class DeviceStatus {
+public enum DeviceStatus {
+
+    HEALTHY,
+    WARNING,
+    CRITICAL
 }

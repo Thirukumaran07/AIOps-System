@@ -1,4 +1,7 @@
 package com.aiops.backend.dto.Response;
 
-public class MLPredictionResponse {
+public record MLPredictionResponse(
+        String status,
+        Double anomalyScore
+) {
 }

@@ -42,4 +42,10 @@ public class Metric {
 
     @Column(nullable = false)
     private LocalDateTime timestamp;
+
+    @Column(nullable = false)
+    private String anomalyStatus;
+
+    @Column(nullable = false)
+    private Double anomalyScore;
 }

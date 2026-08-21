@@ -22,6 +22,8 @@ public class MetricMapper {
                 .latency(request.latency())
                 .packetLoss(request.packetLoss())
                 .timestamp(LocalDateTime.now())
+                .anomalyStatus("PENDING")
+                .anomalyScore(0.0)
                 .build();
     }
 
@@ -37,7 +39,9 @@ public class MetricMapper {
                 metric.getNetworkUsage(),
                 metric.getLatency(),
                 metric.getPacketLoss(),
-                metric.getTimestamp()
+                metric.getTimestamp(),
+                metric.getAnomalyStatus(),
+                metric.getAnomalyScore()
         );
     }
 }
