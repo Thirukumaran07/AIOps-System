@@ -1,5 +1,10 @@
 package com.aiops.backend.service.impl;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+
 import com.aiops.backend.dto.Response.AlertResponse;
 import com.aiops.backend.entity.Alert;
 import com.aiops.backend.entity.Device;
@@ -7,11 +12,8 @@ import com.aiops.backend.mapper.AlertMapper;
 import com.aiops.backend.repository.AlertRepository;
 import com.aiops.backend.repository.DeviceRepository;
 import com.aiops.backend.service.AlertService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
-import java.util.List;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -22,7 +24,7 @@ public class AlertServiceImpl implements AlertService {
     private final AlertMapper alertMapper;
 
     @Override
-    AlertResponse createAlert(
+    public AlertResponse createAlert(
             Long deviceId,
             String alertType,
             String severity,
@@ -30,12 +32,17 @@ public class AlertServiceImpl implements AlertService {
             Double anomalyScore,
             String rootCause,
             String recommendedAction
-    );{
+    ) {
 
+        // Find device
         Device device = deviceRepository.findById(deviceId)
                 .orElseThrow(() ->
-                        new RuntimeException("Device not found: " + deviceId));
+                        new RuntimeException(
+                                "Device not found: " + deviceId
+                        )
+                );
 
+        // Create alert
         Alert alert = Alert.builder()
                 .device(device)
                 .alertType(alertType)
@@ -44,11 +51,15 @@ public class AlertServiceImpl implements AlertService {
                 .anomalyScore(anomalyScore)
                 .createdAt(LocalDateTime.now())
                 .status("OPEN")
+                .rootCause(rootCause)
+                .recommendedAction(recommendedAction)
                 .build();
 
-        return alertMapper.toResponse(
-                alertRepository.save(alert)
-        );
+        // Save alert
+        Alert savedAlert = alertRepository.save(alert);
+
+        // Return response
+        return alertMapper.toResponse(savedAlert);
     }
 
     @Override

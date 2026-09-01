@@ -9,5 +9,4 @@ public class AiopsBackendApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(AiopsBackendApplication.class, args);
 	}
-
 }

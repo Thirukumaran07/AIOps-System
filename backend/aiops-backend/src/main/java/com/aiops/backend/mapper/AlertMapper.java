@@ -1,8 +1,9 @@
 package com.aiops.backend.mapper;
 
+import org.springframework.stereotype.Component;
+
 import com.aiops.backend.dto.Response.AlertResponse;
 import com.aiops.backend.entity.Alert;
-import org.springframework.stereotype.Component;
 
 @Component
 public class AlertMapper {
@@ -18,7 +19,9 @@ public class AlertMapper {
                 alert.getMessage(),
                 alert.getAnomalyScore(),
                 alert.getCreatedAt(),
-                alert.getStatus()
+                alert.getStatus(),
+                alert.getRootCause(),
+                alert.getRecommendedAction()
         );
     }
 }

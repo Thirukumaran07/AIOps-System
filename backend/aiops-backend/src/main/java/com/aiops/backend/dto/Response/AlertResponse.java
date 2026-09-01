@@ -20,6 +20,10 @@ public record AlertResponse(
 
         LocalDateTime createdAt,
 
-        String status
+        String status,
+
+        String rootCause,
+
+        String recommendedAction
 ) {
 }

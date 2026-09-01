@@ -1,8 +1,8 @@
 package com.aiops.backend.service;
 
-import com.aiops.backend.dto.Response.AlertResponse;
-
 import java.util.List;
+
+import com.aiops.backend.dto.Response.AlertResponse;
 
 public interface AlertService {
 
@@ -11,7 +11,9 @@ public interface AlertService {
             String alertType,
             String severity,
             String message,
-            Double anomalyScore
+            Double anomalyScore,
+            String rootCause,
+            String recommendedAction
     );
 
     List<AlertResponse> getAllAlerts();
