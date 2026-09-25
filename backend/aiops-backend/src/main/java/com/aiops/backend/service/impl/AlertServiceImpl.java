@@ -3,6 +3,7 @@ package com.aiops.backend.service.impl;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.aiops.backend.exception.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 
 import com.aiops.backend.dto.Response.AlertResponse;
@@ -89,5 +90,17 @@ public class AlertServiceImpl implements AlertService {
                 .stream()
                 .map(alertMapper::toResponse)
                 .toList();
+    }
+
+    @Override
+    public void updateAlertStatus(Long alertId, String status) {
+
+        Alert alert = alertRepository.findById(alertId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Alert not found: " + alertId));
+
+        alert.setStatus(status);
+
+        alertRepository.save(alert);
     }
 }

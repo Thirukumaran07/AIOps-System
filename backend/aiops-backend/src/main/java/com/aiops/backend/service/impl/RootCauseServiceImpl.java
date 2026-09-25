@@ -1,71 +1,192 @@
 package com.aiops.backend.service.impl;
 
+import com.aiops.backend.dto.Response.RootCauseResponse;
 import com.aiops.backend.entity.Metric;
+import com.aiops.backend.entity.RootCause;
+import com.aiops.backend.exception.ResourceNotFoundException;
+import com.aiops.backend.repository.RootCauseRepository;
 import com.aiops.backend.service.RootCauseService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
 @Service
+@RequiredArgsConstructor
 public class RootCauseServiceImpl implements RootCauseService {
 
+    private final RootCauseRepository rootCauseRepository;
+
     @Override
-    public String determineRootCause(Metric metric) {
+    public RootCauseResponse analyze(Metric metric) {
 
-        if (metric.getCpuUsage() >= 90) {
-            return "CPU overload detected due to sustained high CPU utilization.";
-        }
+        String rootCause = determineRootCause(metric);
+        String severity = determineSeverity(metric, rootCause);
+        double confidence = determineConfidence(rootCause);
+        String recommendedAction = determineRecommendedAction(metric);
 
-        if (metric.getMemoryUsage() >= 90) {
-            return "Memory exhaustion detected due to critically high memory utilization.";
-        }
+        RootCause rootCauseEntity = RootCause.builder()
+                .metric(metric)
+                .rootCause(rootCause)
+                .severity(severity)
+                .confidence(confidence)
+                .recommendedAction(recommendedAction)
+                .createdAt(LocalDateTime.now())
+                .build();
 
-        if (metric.getDiskUsage() >= 90) {
-            return "Disk resource exhaustion detected due to critically high disk utilization.";
-        }
+        RootCause saved =
+                rootCauseRepository.save(rootCauseEntity);
 
-        if (metric.getPacketLoss() >= 5
-                && metric.getLatency() >= 200) {
-            return "Network degradation detected due to high packet loss and latency.";
-        }
-
-        if (metric.getPacketLoss() >= 5) {
-            return "Network instability detected due to high packet loss.";
-        }
-
-        if (metric.getLatency() >= 200) {
-            return "Network congestion detected due to high latency.";
-        }
-
-        return "Abnormal system behavior detected by the machine learning model.";
+        return mapToResponse(saved);
     }
 
     @Override
-    public String determineRecommendedAction(Metric metric) {
+    public List<RootCauseResponse> getAll() {
 
-        if (metric.getCpuUsage() >= 90) {
-            return "Reduce CPU workload or restart the affected monitoring service.";
+        return rootCauseRepository.findAll()
+                .stream()
+                .map(this::mapToResponse)
+                .toList();
+    }
+
+    @Override
+    public RootCauseResponse getById(Long id) {
+
+        RootCause rootCause =
+                rootCauseRepository.findById(id)
+                        .orElseThrow(() ->
+                                new ResourceNotFoundException(
+                                        "Root cause not found: " + id
+                                ));
+
+        return mapToResponse(rootCause);
+    }
+
+    @Override
+    public List<RootCauseResponse> getByMetricId(Long metricId) {
+
+        return rootCauseRepository
+                .findByMetricId(metricId)
+                .stream()
+                .map(this::mapToResponse)
+                .toList();
+    }
+
+    @Override
+    public String determineRecommendedAction(
+            Metric savedMetric
+    ) {
+
+        if (savedMetric.getCpuUsage() >= 90) {
+
+            return "Identify the process consuming high CPU and terminate the process only if it is a non-critical process; otherwise notify the administrator.";
+
+        } else if (savedMetric.getMemoryUsage() >= 90) {
+
+            return "Identify the process consuming excessive memory and log/notify the administrator; safely release unused resources where possible.";
+
+        } else if (savedMetric.getDiskUsage() >= 90) {
+
+            return "Check available storage, identify large/unnecessary files, and notify the administrator before deleting any files.";
+
+        } else if (savedMetric.getNetworkUsage() != null && savedMetric.getNetworkUsage() >= 90) {
+
+            return "Monitor network traffic, identify the source of high utilization, and notify the administrator regarding the network condition.";
+
+        } else if (savedMetric.getLatency() >= 200) {
+
+            return "Check network connectivity, identify the high-latency destination, and retry the connection.";
+
+        } else if (savedMetric.getPacketLoss() >= 5) {
+
+            return "Check network connectivity, retry the connection, and notify the administrator if packet loss persists.";
         }
 
-        if (metric.getMemoryUsage() >= 90) {
-            return "Release unused memory or restart the affected service.";
+        return "Perform detailed system and network diagnostics";
+    }
+
+    @Override
+    public String determineRootCause(
+            Metric savedMetric
+    ) {
+
+        if (savedMetric.getCpuUsage() >= 90) {
+
+            return "High CPU utilization";
+
+        } else if (savedMetric.getMemoryUsage() >= 90) {
+
+            return "High memory utilization";
+
+        } else if (savedMetric.getDiskUsage() >= 90) {
+
+            return "High disk utilization";
+
+        } else if (savedMetric.getLatency() >= 200) {
+
+            return "High network latency";
+
+        } else if (savedMetric.getPacketLoss() >= 5) {
+
+            return "Network packet loss";
         }
 
-        if (metric.getDiskUsage() >= 90) {
-            return "Free disk space or remove unnecessary files.";
-        }
+        return "ML-detected system/network anomaly";
+    }
 
-        if (metric.getPacketLoss() >= 5
-                && metric.getLatency() >= 200) {
-            return "Check network connectivity, routing and restart the network service if required.";
-        }
+    private String determineSeverity(
+            Metric metric,
+            String rootCause
+    ) {
 
-        if (metric.getPacketLoss() >= 5) {
-            return "Check network connectivity and packet transmission.";
+        if (metric.getCpuUsage() >= 90
+                || metric.getMemoryUsage() >= 90
+                || metric.getDiskUsage() >= 90
+                || metric.getPacketLoss() >= 5) {
+
+            return "HIGH";
         }
 
         if (metric.getLatency() >= 200) {
-            return "Check network congestion and connectivity.";
+            return "MEDIUM";
         }
 
-        return "Investigate the affected device and review recent metric trends.";
+        return "MEDIUM";
+    }
+
+    private double determineConfidence(
+            String rootCause
+    ) {
+
+        return switch (rootCause) {
+
+            case "High CPU utilization",
+                 "High memory utilization",
+                 "High disk utilization" ->
+                    95.0;
+
+            case "High network latency",
+                 "Network packet loss" ->
+                    90.0;
+
+            default ->
+                    70.0;
+        };
+    }
+
+    private RootCauseResponse mapToResponse(
+            RootCause rootCause
+    ) {
+
+        return new RootCauseResponse(
+                rootCause.getId(),
+                rootCause.getMetric().getId(),
+                rootCause.getRootCause(),
+                rootCause.getSeverity(),
+                rootCause.getConfidence(),
+                rootCause.getRecommendedAction(),
+                rootCause.getCreatedAt()
+        );
     }
 }

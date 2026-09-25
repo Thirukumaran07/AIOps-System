@@ -21,4 +21,6 @@ public interface AlertService {
     List<AlertResponse> getAlertsByDevice(Long deviceId);
 
     List<AlertResponse> getOpenAlerts();
+
+    void updateAlertStatus(Long alertId, String status);
 }

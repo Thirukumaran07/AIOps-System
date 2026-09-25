@@ -1,8 +1,10 @@
 package com.aiops.backend.service.impl;
 
 import com.aiops.backend.dto.Request.MetricRequest;
+import com.aiops.backend.dto.Response.AlertResponse;
 import com.aiops.backend.dto.Response.MLPredictionResponse;
 import com.aiops.backend.dto.Response.MetricResponse;
+import com.aiops.backend.dto.Response.RootCauseResponse;
 import com.aiops.backend.entity.Device;
 import com.aiops.backend.entity.Metric;
 import com.aiops.backend.exception.ResourceNotFoundException;
@@ -10,6 +12,7 @@ import com.aiops.backend.mapper.MetricMapper;
 import com.aiops.backend.repository.DeviceRepository;
 import com.aiops.backend.repository.MetricRepository;
 import com.aiops.backend.service.AlertService;
+import com.aiops.backend.service.HealingService;
 import com.aiops.backend.service.MetricService;
 import com.aiops.backend.service.PredictionService;
 import com.aiops.backend.service.RootCauseService;
@@ -30,6 +33,7 @@ public class MetricServiceImpl implements MetricService {
     private final PredictionService predictionService;
     private final AlertService alertService;
     private final RootCauseService rootCauseService;
+    private final HealingService healingService;
 
     @Override
     public MetricResponse createMetric(MetricRequest request) {
@@ -74,44 +78,93 @@ public class MetricServiceImpl implements MetricService {
         // 8. Handle anomaly
         if ("ANOMALY".equalsIgnoreCase(prediction.status())) {
 
-            // Determine alert severity
+            System.out.println("========== ANOMALY DETECTED ==========");
+
+            // 8.1 Determine initial alert severity
             String severity = determineSeverity(savedMetric);
 
-            // Build alert message
+            // 8.2 Build alert message
             String message = buildAlertMessage(savedMetric);
 
-            // Determine root cause
+            // 8.3 Perform Root Cause Analysis
+            RootCauseResponse rootCauseResponse =
+                    rootCauseService.analyze(savedMetric);
+
+            // 8.4 Get Root Cause information
             String rootCause =
-                    rootCauseService.determineRootCause(savedMetric);
+                    rootCauseResponse.rootCause();
 
-            // Determine recommended action
             String recommendedAction =
-                    rootCauseService.determineRecommendedAction(savedMetric);
+                    rootCauseResponse.recommendedAction();
 
-            // Create alert with RCA information
-            alertService.createAlert(
-                    savedMetric.getDevice().getId(),
-                    "NETWORK_ANOMALY",
-                    severity,
-                    message,
-                    prediction.anomalyScore(),
-                    rootCause,
-                    recommendedAction
-            );
+            // Use RCA severity
+            severity =
+                    rootCauseResponse.severity();
 
-            // Debug information
+            // 8.5 Execute Self-Healing
+            boolean healingSuccessful =
+                    healingService.heal(
+                            request.deviceId(),
+                            rootCause
+                    );
+
+            // 8.6 Create Alert
+            AlertResponse alertResponse =
+                    alertService.createAlert(
+                            request.deviceId(),
+                            "NETWORK_ANOMALY",
+                            severity,
+                            message,
+                            savedMetric.getAnomalyScore(),
+                            rootCause,
+                            recommendedAction
+                    );
+
+            // 8.7 Update Alert status based on healing result
+            if (healingSuccessful) {
+
+                alertService.updateAlertStatus(
+                        alertResponse.id(),
+                        "RECOVERED"
+                );
+
+                System.out.println(
+                        "Healing Status: RECOVERED"
+                );
+
+            } else {
+
+                alertService.updateAlertStatus(
+                        alertResponse.id(),
+                        "FAILED"
+                );
+
+                System.out.println(
+                        "Healing Status: FAILED"
+                );
+            }
+
+            // 8.8 Debug information
             System.out.println("========== ALERT CREATED ==========");
-            System.out.println("Device ID: "
-                    + savedMetric.getDevice().getId());
+            System.out.println(
+                    "Device ID: "
+                            + savedMetric.getDevice().getId()
+            );
             System.out.println("Severity: " + severity);
             System.out.println("Message: " + message);
             System.out.println("Root Cause: " + rootCause);
-            System.out.println("Recommended Action: "
-                    + recommendedAction);
+            System.out.println(
+                    "Recommended Action: "
+                            + recommendedAction
+            );
+            System.out.println(
+                    "Healing Successful: "
+                            + healingSuccessful
+            );
             System.out.println("===================================");
         }
 
-        // 9. Calculate health score
+        // 9. Calculate device health score
         double healthScore =
                 metricCalculator.calculateHealthScore(
                         request.cpuUsage(),
@@ -132,7 +185,7 @@ public class MetricServiceImpl implements MetricService {
         // 12. Save updated device
         deviceRepository.save(device);
 
-        // 13. Return response
+        // 13. Return metric response
         return metricMapper.toResponse(savedMetric);
     }
 

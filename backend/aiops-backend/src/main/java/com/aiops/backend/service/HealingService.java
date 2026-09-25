@@ -1,4 +1,6 @@
 package com.aiops.backend.service;
 
-public class HealingService {
+public interface HealingService {
+
+    boolean heal(Long deviceId, String rootCause);
 }
