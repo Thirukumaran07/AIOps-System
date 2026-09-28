@@ -8,9 +8,9 @@ import java.util.List;
 public interface HealingLogRepository
         extends JpaRepository<HealingLog, Long> {
 
-    List<HealingLog> findByDeviceIdOrderByExecutedAtDesc(
+    List<HealingLog> findByDeviceIdOrderByTimestampDesc(
             Long deviceId
     );
 
-    List<HealingLog> findTop10ByOrderByExecutedAtDesc();
+    List<HealingLog> findTop10ByOrderByTimestampDesc();
 }

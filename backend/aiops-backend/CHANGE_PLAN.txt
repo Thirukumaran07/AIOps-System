@@ -1,0 +1,14 @@
+/Users/apple/Project/AIops-network-self-healing/backend/aiops-backend/src/main/java/com/aiops/backend/healing/actions/HealingStatus.java
+/Users/apple/Project/AIops-network-self-healing/backend/aiops-backend/src/main/java/com/aiops/backend/healing/actions/HealingResult.java  [MODIFY - add status, retryCount fields]
+/Users/apple/Project/AIops-network-self-healing/backend/aiops-backend/src/main/java/com/aiops/backend/healing/actions/HealingAction.java
+/Users/apple/Project/AIops-network-self-healing/backend/aiops-backend/src/main/java/com/aiops/backend/healing/actions/CpuHealingAction.java  [MODIFY - real recovery + BEFORE/AFTER + dry-run]
+/Users/apple/Project/AIops-network-self-healing/backend/aiops-backend/src/main/java/com/aiops/backend/healing/actions/MemoryHealingAction.java  [MODIFY - dry-run + fixed is-safe logic]
+/Users/apple/Project/AIops-network-self-healing/backend/aiops-backend/src/main/java/com/aiops/backend/healing/actions/DiskHealingAction.java  [MODIFY - dry-run + diagnosis only]
+/Users/apple/Project/AIops-network-self-healing/backend/aiops-backend/src/main/java/com/aiops/backend/healing/actions/NetworkHealingAction.java  [MODIFY - notification + interface diagnosis]
+/Users/apple/Project/AIops-network-self-healing/backend/aiops-backend/src/main/java/com/aiops/backend/healing/actions/LatencyHealingAction.java  [CREATE NEW]
+/Users/apple/Project/AIops-network-self-healing/backend/aiops-backend/src/main/java/com/aiops/backend/healing/actions/PacketLossHealingAction.java  [CREATE NEW]
+/Users/apple/Project/AIops-network-self-healing/backend/aiops-backend/src/main/java/com/aiops/backend/healing/NotificationService.java  [CREATE NEW]
+/Users/apple/Project/AIops-network-self-healing/backend/aiops-backend/src/main/java/com/aiops/backend/healing/LogNotificationService.java  [CREATE NEW]
+/Users/apple/Project/AIops-network-self-healing/backend/aiops-backend/src/main/java/com/aiops/backend/service/impl/HealingServiceImpl.java  [MODIFY - route to all 6 actions]
+/Users/apple/Project/AIops-network-self-healing/backend/aiops-backend/src/main/resources/application.properties  [MODIFY - add healing config]
+/Users/apple/Project/AIops-network-self-healing/backend/aiops-backend/src/test/java/com/aiops/backend/healing/HealingActionTest.java  [CREATE NEW]

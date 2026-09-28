@@ -1,4 +1,73 @@
-package com.aiops.backend.healing;
+import os
+
+base_dir = "/Users/apple/Project/AIops-network-self-healing/backend/aiops-backend/src/main/java/com/aiops/backend"
+
+# HealingLogRepository.java
+healing_log_repository = """package com.aiops.backend.repository;
+
+import com.aiops.backend.entity.HealingLog;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.List;
+
+public interface HealingLogRepository
+        extends JpaRepository<HealingLog, Long> {
+
+    List<HealingLog> findByDeviceIdOrderByTimestampDesc(
+            Long deviceId
+    );
+
+    List<HealingLog> findTop10ByOrderByTimestampDesc();
+}
+"""
+
+# RecoveryHistory.java
+recovery_history = """package com.aiops.backend.healing;
+
+import com.aiops.backend.entity.HealingLog;
+import com.aiops.backend.repository.HealingLogRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+@Service
+@RequiredArgsConstructor
+public class RecoveryHistory {
+
+    private final HealingLogRepository healingLogRepository;
+
+    public List<HealingLog> getAllHistory() {
+
+        return healingLogRepository
+                .findAll()
+                .stream()
+                .sorted(
+                        (a, b) ->
+                                b.getTimestamp()
+                                        .compareTo(a.getTimestamp())
+                )
+                .toList();
+    }
+
+    public List<HealingLog> getDeviceHistory(
+            Long deviceId
+    ) {
+
+        return healingLogRepository
+                .findByDeviceIdOrderByTimestampDesc(deviceId);
+    }
+
+    public List<HealingLog> getRecentHistory() {
+
+        return healingLogRepository
+                .findTop10ByOrderByTimestampDesc();
+    }
+}
+"""
+
+# HealingEngine.java
+healing_engine = """package com.aiops.backend.healing;
 
 import com.aiops.backend.entity.HealingLog;
 import com.aiops.backend.repository.HealingLogRepository;
@@ -94,3 +163,15 @@ public class HealingEngine {
         return healingLogRepository.save(log);
     }
 }
+"""
+
+with open(f"{base_dir}/repository/HealingLogRepository.java", "w") as f:
+    f.write(healing_log_repository)
+    
+with open(f"{base_dir}/healing/RecoveryHistory.java", "w") as f:
+    f.write(recovery_history)
+    
+with open(f"{base_dir}/healing/HealingEngine.java", "w") as f:
+    f.write(healing_engine)
+
+print("Java files patched successfully.")

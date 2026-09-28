@@ -20,8 +20,8 @@ public class RecoveryHistory {
                 .stream()
                 .sorted(
                         (a, b) ->
-                                b.getExecutedAt()
-                                        .compareTo(a.getExecutedAt())
+                                b.getTimestamp()
+                                        .compareTo(a.getTimestamp())
                 )
                 .toList();
     }
@@ -31,12 +31,12 @@ public class RecoveryHistory {
     ) {
 
         return healingLogRepository
-                .findByDeviceIdOrderByExecutedAtDesc(deviceId);
+                .findByDeviceIdOrderByTimestampDesc(deviceId);
     }
 
     public List<HealingLog> getRecentHistory() {
 
         return healingLogRepository
-                .findTop10ByOrderByExecutedAtDesc();
+                .findTop10ByOrderByTimestampDesc();
     }
 }

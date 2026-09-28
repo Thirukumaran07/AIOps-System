@@ -100,7 +100,7 @@ def send_metrics(metrics):
         response = requests.post(
             METRICS_ENDPOINT,
             json=metrics,
-            timeout=5
+            timeout=60
         )
 
         if response.status_code in [200, 201]:

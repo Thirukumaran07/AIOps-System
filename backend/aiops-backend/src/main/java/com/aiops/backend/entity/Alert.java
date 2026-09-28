@@ -28,7 +28,7 @@ public class Alert {
     @Column(nullable = false)
     private String severity;
 
-    @Column(nullable = false, length = 500)
+    @Column(columnDefinition = "TEXT")
     private String message;
 
     @Column(nullable = false)
@@ -40,9 +40,9 @@ public class Alert {
     @Column(nullable = false)
     private String status;
 
-    @Column(nullable = false, length = 500)
+    @Column(columnDefinition = "TEXT")
     private String rootCause;
 
-    @Column(nullable = false, length = 500)
+    @Column(columnDefinition = "TEXT")
     private String recommendedAction;
 }
